@@ -1,28 +1,40 @@
 #include <stdio.h>
 
-#define D_COUNT 5  //ilość par (x, f(x)) na wejsciu
-
-
-float tabX[D_COUNT] = {0, 1, 2, 4, 5};
-float tabY[D_COUNT] = {7, 3, -1, 3, -3};
-float result[D_COUNT];
-
+#define CCOUNT 9 	//ilosc wejsciowych par (x, f(x))
+#define XCOUNT 5    	//ilosc (roznych) x 
 
 float diffQ(int, int, int);  	//oblicz ilorazy różnicowe i zapisz wybrane do tablicy wynikowej 
 void reverse();			//odwróć tablice
 float valueAt(int, int);	//oblicz wartość wielomianu w punkcie
+int factorial(int);		//oblicz silnie
+float zeroS(int, int);		//oblicz il.roznicowy kiedy dzielimy przez zero	
+
+float tabX[CCOUNT] = {0, 0, 1, 2, 4, 4, 5, 5, 5};
+float tabY[CCOUNT] = {7, 7, 3, -1, 3, 3, -3, -3, -3};
+float result[CCOUNT];
+
+float T[3][3] = {	//wiersz tablicy T kojarzy x z kolejnymi wartosciami pochodnych wyzszych rzedów z f(x)  
+	{0, 3},
+	{4, 1},
+	{5, 1, 2}
+	};
+
 
 int main()
-{
+{	
 	int i;
 
-	diffQ(0, D_COUNT-1, 0);
-	reverse(result);
+	diffQ(0, CCOUNT-1, 0);
+	reverse(result);	
 	printf("Wspolczynniki wielomianu: ");
-	for(i = 0; i < D_COUNT; i++)
+	for(i = 0; i < CCOUNT; i++)
 		printf("%g ", result[i]);
 
-	printf("\nWartosc L(3): %g\n", valueAt(3, D_COUNT-1));
+	printf("\nWartosc H(0): %g\n", valueAt(0, CCOUNT-1));
+	printf("Wartosc H(1): %g\n", valueAt(1, CCOUNT-1));
+	printf("Wartosc H(2): %g\n", valueAt(2, CCOUNT-1));
+	printf("Wartosc H(4): %g\n", valueAt(4, CCOUNT-1));
+	printf("Wartosc H(5): %g\n", valueAt(5, CCOUNT-1));
 
 	return 0;
 }
@@ -30,21 +42,35 @@ int main()
 
 float diffQ(int a, int b, int h)	//zmienna h sluzy do wyznaczania gornej krawedzi trojkatnej tablicy
 {
-	float k;
-	int p;
+	float k, r;
+	int p, d;
 
-	if (a == b) {
-		if (h == D_COUNT-1)
+	if (a == b) {	
+		if (h == CCOUNT-1)
 			result[h] = tabY[a];
 		return tabY[a];
 	}
 	else {
 		p = h;
-		k = (diffQ(a+1, b, -1) - diffQ(a, b-1, ((p<0) ? -1 : ++p))) / (tabX[b] - tabX[a]);
+		k = (diffQ(a+1, b, -1) - diffQ(a, b-1, ((p<0) ? -1 : ++p)));	
+		d = tabX[b] - tabX[a];
+		if (d == 0)
+			r = zeroS((b-a)+1, tabX[b]);
+		else
+			r = k/d;
 		if (h >= 0)
-			result[h] = k;
-		return k;	
+			result[h] = r;
+		return r;	
 	}
+}
+
+float zeroS(int i, int x)
+{
+	int j;
+	for (j = 0; j < XCOUNT; j++)
+		if (T[j][0] == x) 
+			break;
+	return T[j][i-1]/factorial(i-1);
 }
 
 float valueAt(int x, int n)
@@ -58,11 +84,21 @@ float valueAt(int x, int n)
 	return k;
 }
 
+int factorial(int n) 
+{
+	int i, fact = 1;
+
+	for (i = 1; i <= n; i++)
+    		fact = fact * i;
+	return fact;	
+}
+
 void reverse()
 {
 	int i, j;
 	float c;
 
-	for (i = 0, j = D_COUNT-1; i < j; i++, j--)
+	for (i = 0, j = CCOUNT-1; i < j; i++, j--)
 		c = result[i], result[i] = result[j], result[j] = c;
 }
+
